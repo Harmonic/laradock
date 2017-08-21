@@ -3,3 +3,4 @@
 /data
 /.project
 .docker-sync
+nginx/sites/*
