@@ -232,7 +232,7 @@ By default **PHP-FPM 7.0** is running.
     php-fpm:
         build:
             context: ./php-fpm
-            dockerfile: Dockerfile-70
+            dockerfile: Dockerfile-56
     ...
 ```
 
@@ -331,7 +331,7 @@ For information on how to configure xDebug with your IDE and work it out, check 
 <a name="Setup remote debugging for PhpStorm on Linux"></a>
 ## Setup remote debugging for PhpStorm on Linux
 
- - Make sure you have followed the steps above in the [Install Xdebug section](http://laradock.io/documentation/#install-xdebug). 
+ - Make sure you have followed the steps above in the [Install Xdebug section](http://laradock.io/documentation/#install-xdebug).
 
  - Make sure Xdebug accepts connections and listens on port 9000. (Should be default configuration).
 
@@ -922,6 +922,44 @@ docker-compose up -d minio
   ```
 
 
+
+<br>
+<a name="Use-AWS"></a>
+## Use AWS
+
+1 - Configure AWS:
+  - make sure to add your SSH keys in aws/ssh_keys folder
+
+2 - Run the Aws Container (`aws`) with the `docker-compose up` command. Example:
+
+```bash
+docker-compose up -d aws
+```
+
+3 - Access the aws container with `docker-compose exec aws bash`
+
+4 - To start using eb cli inside the container, initiaze your project first by doing 'eb init'. Read the [aws eb cli](http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/eb-cli3-configuration.html) docs for more details.
+
+
+
+<br>
+<a name="Use-Grafana"></a>
+## Use Grafana
+
+1 - Configure Grafana: Change Port using `GRAFANA_PORT` if you wish to. Default is port 3000.
+
+2 - Run the Grafana Container (`grafana`) with the `docker-compose up`command:
+
+```bash
+docker-compose up -d grafana
+```
+
+3 - Open your browser and visit the localhost on port **3000** at the following URL: `http://localhost:3000`
+
+4 - Login using the credentials User = `admin` Passwort = `admin`. Change the password in the webinterface if you want to.
+
+
+
 <br>
 <a name="CodeIgniter"></a>
 
@@ -946,7 +984,7 @@ To install CodeIgniter 3 on Laradock all you have to do is the following simple 
 <a name="Install-Symfony"></a>
 ## Install Symfony
 
-1 - Open the `.env` file and set `WORKSPACE_INSTALL_SYMFONY` to `true`. 
+1 - Open the `.env` file and set `WORKSPACE_INSTALL_SYMFONY` to `true`.
 
 2 - Run `docker-compose build workspace`, after the step above.
 
@@ -1449,7 +1487,7 @@ You can use the d4m-nfs solution in 2 ways, one is using the Laradock built it i
 
 #### B.1: using the built in d4m-nfs integration
 
-In simple terms, docker-sync creates a docker container with a copy of all the application files that can be accessed very quickly from the other containers. 
+In simple terms, docker-sync creates a docker container with a copy of all the application files that can be accessed very quickly from the other containers.
 On the other hand, docker-sync runs a process on the host machine that continuously tracks and updates files changes from the host to this intermediate container.
 
 Out of the box, it comes pre-configured for OS X, but using it on Windows is very easy to set-up by modifying the `DOCKER_SYNC_STRATEGY` on the `.env`
@@ -1473,7 +1511,7 @@ DOCKER_SYNC_STRATEGY=native_osx
 ```bash
 ./sync.sh install
 ```
-3) Start docker-sync and the Laradock environment. 
+3) Start docker-sync and the Laradock environment.
 Specify the services you want to run, as you would normally do with `docker-compose up`
 ```bash
 ./sync.sh up nginx mysql
@@ -1486,7 +1524,7 @@ Please note that the first time docker-sync runs, it will copy all the files to 
 
 ##### Setting up Aliases (optional)
 
-You may create bash profile aliases to avoid having to remember and type these commands for everyday development. 
+You may create bash profile aliases to avoid having to remember and type these commands for everyday development.
 Add the following lines to your `~/.bash_profile`:
 
 ```bash
@@ -1495,11 +1533,11 @@ alias devbash="cd /PATH_TO_LARADOCK/laradock; ./sync.sh bash"
 alias devdown="cd /PATH_TO_LARADOCK/laradock; ./sync.sh down"
 ```
 
-Now from any location on your machine, you can simply run `devup`, `devbash` and `devdown`. 
+Now from any location on your machine, you can simply run `devup`, `devbash` and `devdown`.
 
 
 ##### Additional Commands
- 
+
 Opening bash on the workspace container (to run artisan for example):
  ```bash
  ./sync.sh bash
@@ -1516,7 +1554,7 @@ Removing and cleaning up the files and the docker-sync container. Use only if yo
 
 ##### Additional Notes
 
-- You may run laradock with or without docker-sync at any time using with the same `.env` and `docker-compose.yml`, because the configuration is overridden automatically when docker-sync is used. 
+- You may run laradock with or without docker-sync at any time using with the same `.env` and `docker-compose.yml`, because the configuration is overridden automatically when docker-sync is used.
 - You may inspect the `sync.sh` script to learn each of the commands and even add custom ones.
 - If a container cannot access the files on docker-sync, you may need to set a user on the Dockerfile of that container with an id of 1000 (this is the UID that nginx and php-fpm have configured on laradock). Alternatively, you may change the permissions to 777, but this is **not** recommended.
 
@@ -1660,3 +1698,7 @@ This error sometimes happens because your Laravel application isn't running on t
   2. Change the `DB_HOST` variable on env with the IP that you received from previous step.
 * Option B
    1. Change the `DB_HOST` value to the same name as the MySQL docker container. The Laradock docker-compose file currently has this as `mysql`
+
+## I get stuck when building nginx on `fetch http://mirrors.aliyun.com/alpine/v3.5/main/x86_64/APKINDEX.tar.gz`
+
+As stated on [#749](https://github.com/laradock/laradock/issues/749#issuecomment-293296687), removing the line `RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/' /etc/apk/repositories` from `nginx/Dockerfile` solves the problem.		

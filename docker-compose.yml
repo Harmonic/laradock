@@ -18,11 +18,14 @@ services:
           - INSTALL_XDEBUG=${WORKSPACE_INSTALL_XDEBUG}
           - INSTALL_BLACKFIRE=${INSTALL_BLACKFIRE}
           - INSTALL_SOAP=${WORKSPACE_INSTALL_SOAP}
+          - INSTALL_LDAP=${WORKSPACE_INSTALL_LDAP}
           - INSTALL_MONGO=${WORKSPACE_INSTALL_MONGO}
+          - INSTALL_PHPREDIS=${WORKSPACE_INSTALL_PHPREDIS}
           - INSTALL_MSSQL=${WORKSPACE_INSTALL_MSSQL}
           - INSTALL_NODE=${WORKSPACE_INSTALL_NODE}
           - INSTALL_YARN=${WORKSPACE_INSTALL_YARN}
           - INSTALL_DRUSH=${WORKSPACE_INSTALL_DRUSH}
+          - INSTALL_DRUPAL_CONSOLE=${WORKSPACE_INSTALL_DRUPAL_CONSOLE}
           - INSTALL_AEROSPIKE=${WORKSPACE_INSTALL_AEROSPIKE}
           - INSTALL_V8JS=${WORKSPACE_INSTALL_V8JS}
           - COMPOSER_GLOBAL_INSTALL=${WORKSPACE_COMPOSER_GLOBAL_INSTALL}
@@ -35,8 +38,12 @@ services:
           - INSTALL_SYMFONY=${WORKSPACE_INSTALL_SYMFONY}
           - INSTALL_PYTHON=${WORKSPACE_INSTALL_PYTHON}
           - INSTALL_IMAGE_OPTIMIZERS=${WORKSPACE_INSTALL_IMAGE_OPTIMIZERS}
+          - INSTALL_IMAGEMAGICK=${WORKSPACE_INSTALL_IMAGEMAGICK}
+          - INSTALL_TERRAFORM=${WORKSPACE_INSTALL_TERRAFORM}
+          - INSTALL_DUSK_DEPS=${WORKSPACE_INSTALL_DUSK_DEPS}
           - PUID=${WORKSPACE_PUID}
           - PGID=${WORKSPACE_PGID}
+          - CHROME_DRIVER_VERSION=${WORKSPACE_CHROME_DRIVER_VERSION}
           - NODE_VERSION=${WORKSPACE_NODE_VERSION}
           - YARN_VERSION=${WORKSPACE_YARN_VERSION}
           - TZ=${WORKSPACE_TIMEZONE}
@@ -79,6 +86,7 @@ services:
           - INSTALL_LDAP=${PHP_FPM_INSTALL_LDAP}
           - INSTALL_SWOOLE=${PHP_FPM_INSTALL_SWOOLE}
           - INSTALL_IMAGE_OPTIMIZERS=${PHP_FPM_INSTALL_IMAGE_OPTIMIZERS}
+          - INSTALL_IMAGEMAGICK=${PHP_FPM_INSTALL_IMAGEMAGICK}
         dockerfile: "Dockerfile-${PHP_VERSION}"
       volumes_from:
         - applications
@@ -100,6 +108,7 @@ services:
     php-worker:
       build:
         context: ./php-worker
+        dockerfile: "Dockerfile-${PHP_VERSION}"
       volumes_from:
         - applications
       depends_on:
@@ -151,6 +160,7 @@ services:
         args:
           - PHP_UPSTREAM_CONTAINER=${APACHE_PHP_UPSTREAM_CONTAINER}
           - PHP_UPSTREAM_PORT=${APACHE_PHP_UPSTREAM_PORT}
+          - PHP_UPSTREAM_TIMEOUT=${APACHE_PHP_UPSTREAM_TIMEOUT}
       volumes_from:
         - applications
       volumes:
@@ -468,11 +478,14 @@ services:
       build: ./pgadmin
       ports:
         - "5050:5050"
+      volumes:
+        - ${DATA_SAVE_PATH}/pgadmin-backup:/var/lib/pgadmin4/data/storage/pgadmin4
       depends_on:
         - postgres
       networks:
         - frontend
         - backend
+
 
 ### ElasticSearch Container #################################
 
@@ -533,6 +546,17 @@ services:
       ports:
         - "1025:1025"
         - "8025:8025"
+      networks:
+        - frontend
+        - backend
+
+### MailDev Container #######################################
+
+    maildev:
+      build: ./maildev
+      ports:
+        - "${MAILDEV_HTTP_PORT}:80"
+        - "${MAILDEV_SMTP_PORT}:25"
       networks:
         - frontend
         - backend
@@ -615,6 +639,18 @@ services:
         - frontend
         - backend
 
+### Grafana Container #########################################
+
+    grafana:
+      build:
+        context: ./grafana
+      volumes:
+        - ${DATA_SAVE_PATH}/grafana:/var/lib/grafana
+      ports:
+        - "${GRAFANA_PORT}:3000"
+      networks:
+        - backend
+
 ### Laravel Echo Server #######################################
     laravel-echo-server:
       build:
@@ -628,6 +664,16 @@ services:
       networks:
         - frontend
         - backend
+
+### AWS EB-CLI ####
+    aws:
+      build:
+        context: ./aws
+      volumes_from:
+        - applications
+      depends_on:
+        - workspace
+      tty: true
 
 ### Networks Setup ############################################
 
