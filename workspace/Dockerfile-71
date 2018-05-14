@@ -596,7 +596,8 @@ RUN if [ ${INSTALL_PYTHON} = true ]; then \
   apt-get update \
   && apt-get -y install python python-pip python-dev build-essential  \
   && pip install --upgrade pip  \
-  && pip install --upgrade virtualenv \
+  && hash -r pip \
+  # && pip install --upgrade virtualenv \
 ;fi
 
 #####################################
