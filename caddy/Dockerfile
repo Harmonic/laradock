@@ -1,20 +1,27 @@
-FROM golang
+FROM golang:alpine
 
-MAINTAINER Huadong Zuo <admin@zuohuadong.cn>
+LABEL maintainer="Huadong Zuo <admin@zuohuadong.cn>"
 
-ARG plugins="git"
-
-## If you come frome china, please ues it.
-
-# RUN echo "172.217.6.127 golang.org" >> /etc/hosts
-
-RUN go get github.com/abiosoft/caddyplug/caddyplug \
+RUN apk add --no-cache \
+    openssh \
+    git \
+    build-base && \
+    go get github.com/abiosoft/caddyplug/caddyplug \
     && caddyplug install-caddy \
-    && caddyplug install git
-RUN caddy --version
+    apk del build-base
 
-EXPOSE 80 443 2015
+ARG plugins="cors"
+
+## ARG plugins="cors cgi cloudflare azure linode"
+
+RUN caddyplug install ${plugins}
+
+RUN apk add --no-cache inotify-tools \
+    && echo -e "#!/bin/sh\nwhile inotifywait -e modify /etc/caddy; do\n\tpkill caddy\ndone " >> /start.sh \
+    && chmod +x /start.sh
+
+EXPOSE 80 443
 
 WORKDIR /var/www/public
 
-CMD ["/usr/bin/caddy", "-conf", "/etc/Caddyfile"]
+CMD ["sh","-c","/start.sh & /usr/bin/caddy -conf /etc/caddy/Caddyfile -agree"]
