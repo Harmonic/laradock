@@ -4,3 +4,11 @@
 /.project
 .docker-sync
 nginx/sites/*
+/jenkins/jenkins_home
+
+/logstash/pipeline/*.conf
+/logstash/config/pipelines.yml
+
+/nginx/ssl/*.crt
+/nginx/ssl/*.key
+/nginx/ssl/*.csr
